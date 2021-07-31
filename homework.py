@@ -16,54 +16,58 @@ class Calculator:
         self.limit = limit
         self.records = []
 
-    def add_record(self, rc):
-        self.records.append(rc)
+    def add_record(self, new_record):
+        self.records.append(new_record)
 
     def get_today_stats(self):
-        today_amount = 0
-        for record in self.records:
-            if record.date == dt.datetime.today().date():
-                today_amount += record.amount
-        return round(today_amount, 2)
+        today = dt.datetime.today().date()
+        return sum([record.amount for record in self.records
+                    if record.date == today])
 
     def get_week_stats(self):
         week_period = dt.datetime.today().date() - dt.timedelta(days=7)
-        total_amount = 0
-        for record in self.records:
-            if week_period < record.date <= dt.datetime.today().date():
-                total_amount += record.amount
-        return total_amount
+        today = dt.datetime.today().date()
+        return sum([record.amount for record in self.records
+                    if today >= record.date > week_period])
+
+    def calc_difference(self):
+        return self.limit - self.get_today_stats()
 
 
 class CaloriesCalculator(Calculator):
     def get_calories_remained(self):
-        difference = self.limit - self.get_today_stats()
+        difference = self.calc_difference()
         if difference > 0:
-            msg = (f'Сегодня можно съесть что-нибудь ещё, но с общей '
-                   f'калорийностью не более {difference} кКал')
+            return (f'Сегодня можно съесть что-нибудь ещё, но с общей '
+                    f'калорийностью не более {difference} кКал')
         else:
-            msg = 'Хватит есть!'
-        return msg
+            return 'Хватит есть!'
 
 
 class CashCalculator(Calculator):
-    USD_RATE = 74.17
-    EURO_RATE = 87.44
+    USD_RATE = 74.14
+    EURO_RATE = 87.61
 
     def get_today_cash_remained(self, currency):
-        dif = self.limit - self.get_today_stats()
+        difference = self.calc_difference()
+        currency_dict = {'rub': 'руб', 'eur': 'Euro', 'usd': 'USD'}
+        exchange_rate_dict = {'rub': 1.0, 'eur': 1.0, 'usd': 1.0}
+        exchange_rate_dict['eur'] = self.EURO_RATE
+        exchange_rate_dict['usd'] = self.USD_RATE
+        cash = 0.00
+        message = ''
 
-        if currency == 'eur':
-            msg_02 = (f'{round((abs(dif) / self.EURO_RATE), 2)} Euro')
-        elif currency == 'usd':
-            msg_02 = (f'{round((abs(dif) / self.USD_RATE), 2)} USD')
-        elif currency == 'rub':
-            msg_02 = f'{abs(dif)} руб'
+        if currency not in currency_dict.keys():
+            print('Неправильный формат валюты')
+            return None
 
-        if dif > 0:
-            msg = f'На сегодня осталось {msg_02}'
-        elif dif == 0:
-            msg = 'Денег нет, держись'
+        if difference != 0:
+            cash = round((abs(difference) / exchange_rate_dict[currency]), 2)
+            message = f'{cash} {currency_dict[currency]}'
+
+        if difference > 0:
+            return f'На сегодня осталось {message}'
+        elif difference == 0:
+            return 'Денег нет, держись'
         else:
-            msg = f'Денег нет, держись: твой долг - {msg_02}'
-        return msg
+            return f'Денег нет, держись: твой долг - {message}'
