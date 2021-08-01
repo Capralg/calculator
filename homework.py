@@ -51,10 +51,8 @@ class CashCalculator(Calculator):
     def get_today_cash_remained(self, currency):
         difference = self.calc_difference()
         currency_dict = {'rub': ['руб', 1.0],
-                         'eur': ['Euro', 1.0],
-                         'usd': ['USD', 1.0]}
-        currency_dict['eur'][1] = self.EURO_RATE
-        currency_dict['usd'][1] = self.USD_RATE
+                         'eur': ['Euro', self.EURO_RATE],
+                         'usd': ['USD', self.USD_RATE]}
 
         if currency not in currency_dict.keys():
             return 'Неправильный формат валюты'
