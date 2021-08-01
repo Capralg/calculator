@@ -50,24 +50,22 @@ class CashCalculator(Calculator):
 
     def get_today_cash_remained(self, currency):
         difference = self.calc_difference()
-        currency_dict = {'rub': 'руб', 'eur': 'Euro', 'usd': 'USD'}
-        exchange_rate_dict = {'rub': 1.0, 'eur': 1.0, 'usd': 1.0}
-        exchange_rate_dict['eur'] = self.EURO_RATE
-        exchange_rate_dict['usd'] = self.USD_RATE
-        cash = 0.00
-        message = ''
+        currency_dict = {'rub': ['руб', 1.0],
+                         'eur': ['Euro', 1.0],
+                         'usd': ['USD', 1.0]}
+        currency_dict['eur'][1] = self.EURO_RATE
+        currency_dict['usd'][1] = self.USD_RATE
 
         if currency not in currency_dict.keys():
-            print('Неправильный формат валюты')
-            return None
+            return 'Неправильный формат валюты'
 
-        if difference != 0:
-            cash = round((abs(difference) / exchange_rate_dict[currency]), 2)
-            message = f'{cash} {currency_dict[currency]}'
+        if difference == 0:
+            return 'Денег нет, держись'
+
+        cash = round((abs(difference) / currency_dict[currency][1]), 2)
+        message = f'{cash} {currency_dict[currency][0]}'
 
         if difference > 0:
             return f'На сегодня осталось {message}'
-        elif difference == 0:
-            return 'Денег нет, держись'
         else:
             return f'Денег нет, держись: твой долг - {message}'
